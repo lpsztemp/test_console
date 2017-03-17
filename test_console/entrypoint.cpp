@@ -59,19 +59,15 @@ int main(int, char**)
 	TestContiguousDataSource(file, file);
 	std::cout << "===Preallocated buffer test===\n";
 	std::uint8_t pBuffer[100];
-	auto buff = IOBinaryDataContiguousAccessOwn(represent_as<IIOBinaryDataContiguousAccess>(
-		unique_interface_ptr<IInMemoryIOBinaryData>(InvokeInterfaceGetter(&CreateInMemoryPreallocatedBinaryDataStorage, pBuffer, sizeof(pBuffer), false, nullptr))).release());
+	auto buff = make_inmemory_preallocated_data_storage(pBuffer, sizeof(pBuffer));
 	TestContiguousDataSource(buff, buff);
 	std::cout << "===Preallocated buffer test with owning===\n";
 	auto alloc = std::allocator<std::uint8_t>();
 	auto p2 = std::allocator_traits<std::allocator<std::uint8_t>>::allocate(alloc, sizeof(pBuffer));
-	auto buff2 = IOBinaryDataContiguousAccessOwn(represent_as<IIOBinaryDataContiguousAccess>(
-		unique_interface_ptr<IInMemoryIOBinaryData>(InvokeInterfaceGetter(&CreateInMemoryPreallocatedBinaryDataStorage, p2, sizeof(pBuffer), true, 
-			unique_interface_ptr<IAllocator>(new cpp_allocator_adapter<std::allocator<std::uint8_t>>()).get()))).release());
+	auto buff2 = make_inmemory_preallocated_data_storage(own_buffer(p2, sizeof(pBuffer), alloc));
 	TestContiguousDataSource(buff2, buff2);
 	std::cout << "===Reading from existing buffer===\n";
-	auto pRead = InputBinaryDataContiguousAccessOwn(represent_as<IInputBinaryDataContiguousAccess>(
-		unique_interface_ptr<IInMemoryInputBinaryData>(InvokeInterfaceGetter(&CreateInMemoryBinaryInputDataSource, pBuffer, std::size_t(buff.size()), true))).release());
+	auto pRead = make_inmemory_input_data_source(pBuffer, buff.size());
 	auto vRead = pRead.read().read_all_as<std::vector<std::uint8_t>>();
 	std::cout << "Read contents from the input buffer: ";
 	for (auto b:vRead)
@@ -86,8 +82,7 @@ int main(int, char**)
 		std::cout << "Conversion caused expected error: " << ex.what() << "\n";
 	}
 	std::cout << "===Cached buffer test===\n";
-	auto buff_cached = IOBinaryDataContiguousAccessOwn(represent_as<IIOBinaryDataContiguousAccess>(
-		unique_interface_ptr<IInMemoryIOBinaryData>(InvokeInterfaceGetter(&CreateInMemoryBinaryDataStorage, nullptr))).release());
+	auto buff_cached = make_inmemory_data_storage();
 	TestContiguousDataSource(buff_cached, buff_cached);
 
 	return 0;
