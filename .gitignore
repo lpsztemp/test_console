@@ -27,3 +27,13 @@
 *.exe
 *.out
 *.app
+
+# VS
+.vs
+2015/
+Debug/
+Release/
+x64/
+test_console/*test*
+test_console/*/
+domain_shared/
