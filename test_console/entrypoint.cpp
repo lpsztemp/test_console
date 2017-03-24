@@ -98,9 +98,25 @@ int main(int, char**)
 	////auto fail = CKeyedData<_Implementation::MapBasedKeyedDataBaseImplementation>();
 	//auto b1 = _Implementation::KeyedDataBaseBridge<_Implementation::MapBasedKeyedDataBaseImplementation>::is_readable_type::value;
 	//auto b2 = _Implementation::KeyedDataBaseBridge<_Implementation::MapBasedKeyedDataBaseImplementation>::is_writable_type::value;
+
+
 	p.Insert(std::piecewise_construct, std::forward_as_tuple("Key", 3), std::forward_as_tuple(make_binary_memory_storage_adapter(std::string("value")).get()));
-	//p.Insert(_Implementation::MapBasedKeyedDataBaseImplementation::key_type("Key", 3),
-	//	_Implementation::MapBasedKeyedDataBaseImplementation::value_type(make_binary_memory_storage_adapter(std::string("value")).get()));
+	p.Insert(std::piecewise_construct, std::forward_as_tuple(reinterpret_cast<const std::uint8_t*>("Key"), 3), std::forward_as_tuple(make_binary_memory_storage_adapter(std::string("value")).get()));
+	p.Insert(std::piecewise_construct, std::forward_as_tuple(static_cast<const void*>("Key"), 3), std::forward_as_tuple(make_binary_memory_storage_adapter(std::string("value")).get()));
+	std::string strKey = "Some";
+	p.Insert(strKey, make_binary_memory_storage_adapter(std::string("value")).get());
+	p.Insert(std::piecewise_construct, std::forward_as_tuple(strKey), std::forward_as_tuple(make_binary_memory_storage_adapter(std::string("value")).get()));
+	p.Insert(std::piecewise_construct, std::forward_as_tuple(strKey.begin(), strKey.end()), std::forward_as_tuple(make_binary_memory_storage_adapter(std::string("value")).get()));
+	p.Insert(std::piecewise_construct, std::forward_as_tuple(std::string("Key 1")), std::forward_as_tuple(make_binary_memory_storage_adapter(std::string("value")).get()));
+	p.Insert(std::string("Key 2"), make_binary_memory_storage_adapter(std::string("value")).get());
+	p.Insert(_Implementation::MapBasedKeyedDataBaseImplementation::key_type("Key 3", 5),
+		_Implementation::MapBasedKeyedDataBaseImplementation::value_type(make_binary_memory_storage_adapter(std::string("value")).get()));
+	p.Insert(std::piecewise_construct, std::forward_as_tuple(_Implementation::MapBasedKeyedDataBaseImplementation::key_type("Key 4", 5)),
+		std::forward_as_tuple(_Implementation::MapBasedKeyedDataBaseImplementation::value_type(make_binary_memory_storage_adapter(std::string("value")).get())));
+	auto v = p.Find("Key", 3);
+	p.Erase(v);
+
+
 	//auto mp = _Implementation::MapBasedKeyedDataBaseImplementation();
 	//mp.insert(std::piecewise_construct, std::forward_as_tuple("Key", 3), std::forward_as_tuple(make_binary_memory_storage_adapter(std::string("value")).get()));
 
