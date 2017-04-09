@@ -90,17 +90,24 @@ int main(int, char**)
 {
 	auto map = CKeyedData<_Implementation::InMemoryAssociativeDataStorageImplementation>();
 
-	map.insert("Key1", 4, std::string("value"));
-	map.insert(reinterpret_cast<const std::uint8_t*>("Key2"), 4, "value", 5);
-	map.insert(std::string("Key3"), "value", 5);
-	map.insert(static_cast<const void*>("Key4"), 4, static_cast<const void*>("value"), 6);
+	map.insert("Key1", 4, std::string("value1"));
+	map.insert(reinterpret_cast<const std::uint8_t*>("Key2"), 4, "value2", 6);
+	map.insert(std::string("Key3"), "value3", 6);
+	map.insert(static_cast<const void*>("Key4"), 5, static_cast<const void*>("value4"), 7);
 	//std::string strKey = "Key5";
 	//map.insert(strKey, make_memory_buffer_input_stream("value").get());
 	//strKey = "Key6";
 	//map.insert(strKey.begin(), strKey.end(), 
 	//	ConsequentDataStorageInputOwn(make_binary_memory_storage_adapter(std::string("value")).get()).read().get_interface());
-	auto v = map.find("Key3", 3);
+	auto v = map.find("Key3", 4);
+	auto strFound = represent_as<InputByteStreamOwn>(v.value().input_stream()).read_all_as<std::string>();
+	std::cout << strFound << "\n";
 	map.erase(v);
+	std::cout << represent_as<InputByteStreamOwn>(map.find("Key1", 4).value().input_stream()).read_all_as<std::string>() << "\n";
+	std::cout << represent_as<InputByteStreamOwn>(map.find(reinterpret_cast<const std::uint8_t*>("Key2"), 4).value().input_stream()).read_all_as<std::string>() << "\n";
+	if (bool(map.find("Key3", 4)))
+		std::cout << "Found a deleted element\n";
+	std::cout << static_cast<const char*>(map.find("Key4").value().represent_as_object<InMemoryDataStorageInputOwn>().data()) << "\n";
 
 	//auto strFile = u8"Test file.txt"_s;
 	//auto file = represent_as<ContiguousDataStorageOwn>(make_file_based_data_storage<FileReadWrite, FileCreateAlways>(strFile));
