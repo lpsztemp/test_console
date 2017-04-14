@@ -86,6 +86,17 @@ static auto _is_deducable_to_range(...) -> std::false_type;
 template <class...Args>
 struct is_deducable_to_range:decltype(_is_deducable_to_range<Args...>(int())) {};
 
+static const bool fKey = CAMaaS::_Implementation::is_key_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, std::size_t>::value;
+static const bool fKey2 = CAMaaS::_Implementation::is_key_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, int>::value;
+static const bool fKey3 = CAMaaS::_Implementation::is_key_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, int*>::value;
+
+static const bool fVal = CAMaaS::_Implementation::is_value_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const int*, std::size_t>::value;
+static const bool fVal2 = CAMaaS::_Implementation::is_value_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, int>::value;
+static const bool fVal3 = CAMaaS::_Implementation::is_value_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, int*>::value;
+
+static const bool fConv = std::is_convertible<CAMaaS::InMemoryDataStorageOwn, CAMaaS::DataStorageRef>::value;
+static const bool fBase = std::is_base_of<CAMaaS::DataStorageRef, CAMaaS::InMemoryDataStorageOwn>::value;
+
 int main(int, char**)
 {
 	auto map = CKeyedData<_Implementation::InMemoryAssociativeDataStorageImplementation>();
@@ -100,14 +111,22 @@ int main(int, char**)
 	//map.insert(strKey.begin(), strKey.end(), 
 	//	ConsequentDataStorageInputOwn(make_binary_memory_storage_adapter(std::string("value")).get()).read().get_interface());
 	auto v = map.find("Key3", 4);
-	auto strFound = represent_as<InputByteStreamOwn>(v.value().input_stream()).read_all_as<std::string>();
+	auto strFound = represent_as<InputByteStreamOwn>(v.input_stream()).read_all_as<std::string>();
 	std::cout << strFound << "\n";
 	map.erase(v);
-	std::cout << represent_as<InputByteStreamOwn>(map.find("Key1", 4).value().input_stream()).read_all_as<std::string>() << "\n";
-	std::cout << represent_as<InputByteStreamOwn>(map.find(reinterpret_cast<const std::uint8_t*>("Key2"), 4).value().input_stream()).read_all_as<std::string>() << "\n";
+	std::cout << represent_as<InputByteStreamOwn>(map.find("Key1", 4).input_stream()).read_all_as<std::string>() << "\n";
+	std::cout << represent_as<InputByteStreamOwn>(map.find(reinterpret_cast<const std::uint8_t*>("Key2"), 4).input_stream()).read_all_as<std::string>() << "\n";
 	if (bool(map.find("Key3", 4)))
 		std::cout << "Found a deleted element\n";
-	std::cout << static_cast<const char*>(map.find("Key4").value().represent_as_object<InMemoryDataStorageInputOwn>().data()) << "\n";
+	std::cout << static_cast<const char*>(represent_as<InMemoryDataStorageInputOwn>(map.find("Key4").get_storage()).data()) << "\n";
+
+	auto map2 = make_associative_data_storage();
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(map2.create_node("Some node 1")).write()).write("Value");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(map2.create_node("Some node 2")).write()).write("Value");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(map2.create_node("Some node 3")).write()).write("Value 3");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(map2.create_node("Some node 4")).write()).write("Value");
+	map2.delete_node("Some node 2");
+	std::cout << represent_as<InputByteStreamOwn>(map2.read("Some node 3")).read_all_as<std::string>() << "\n";
 
 	//auto strFile = u8"Test file.txt"_s;
 	//auto file = represent_as<ContiguousDataStorageOwn>(make_file_based_data_storage<FileReadWrite, FileCreateAlways>(strFile));
