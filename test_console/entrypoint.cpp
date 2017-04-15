@@ -128,6 +128,42 @@ int main(int, char**)
 	map2.delete_node("Some node 2");
 	std::cout << represent_as<InputByteStreamOwn>(map2.read("Some node 3")).read_all_as<std::string>() << "\n";
 
+	/*auto tst_ini_file = make_file_based_data_storage("ini_test.ini", FileReadWrite, FileCreateAlways);
+	HINI hIni;
+	int n1 = OpenIniFromStream(represent_as<InputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(tst_ini_file).read()).get_interface(), &hIni);
+	HINISECTION hSection;
+	int n2 = FindIniSectionEx(hIni, "", &hSection);
+	HINIKEY hKey;
+	int n3 = CreateIniKeyEx(hSection, "sadsad", &hKey);
+	CloseIniKey(hKey);
+	CloseIniSection(hSection);
+	CloseIni(hIni);*/
+
+
+
+	auto ini_map = make_associative_data_storage<AssociativeDataStorageParserIni | AssociativeDataStorageReadAccess | AssociativeDataStorageWriteAccess>
+		(make_file_based_data_storage("ini_test.ini", FileReadWrite, FileCreateAlways));
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some node 1")).write()).write("Value");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some node 2")).write()).write("Value");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some node 3")).write()).write("Value 3");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some node 4")).write()).write("Value");
+	ini_map.delete_node("Some node 2");
+	std::cout << represent_as<InputByteStreamOwn>(ini_map.read("Some node 3")).read_all_as<std::string>() << "\n";
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some section 1/Some node 1")).write()).write("Value");
+	ini_map.create_node("Some section 1/empty node");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some section 2/Some node 1")).write()).write("Value");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some section 3/Some node 1")).write()).write("Value");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some section 3/Some node 2")).write()).write("Value");
+	ini_map.create_node("Some section 4/Some node 1");
+	represent_as<OutputByteStreamOwn>(represent_as<ContiguousDataStorageOwn>(ini_map.create_node("Some section with \\/ and \\\\/Some node with \\/ and \\\\")).write()).write("A value (\\\\, \\/)");
+	ini_map.delete_node("Some section 3/Some node 1");
+	ini_map.delete_node("Some section 3/Some node 2");
+	ini_map.delete_node("Some section 4/Some node 1");
+	std::cout << represent_as<InputByteStreamOwn>(ini_map.read("Some section with \\/ and \\\\/Some node with \\/ and \\\\")).read_all_as<std::string>() << "\n";
+	if (bool(ini_map.find_node("Some section 4/Some node 1", std::nothrow)))
+		std::cout << "Found a deleted node\n";
+	
+
 	//auto strFile = u8"Test file.txt"_s;
 	//auto file = represent_as<ContiguousDataStorageOwn>(make_file_based_data_storage<FileReadWrite, FileCreateAlways>(strFile));
 	//ConsequentDataStorageInputRef ref = file;
