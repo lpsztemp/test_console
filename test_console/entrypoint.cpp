@@ -63,40 +63,6 @@ bool copy(IInputByteStream* pFrom, IOutputByteStream* pTo)
    return true;
 }
 
-template <class...Args>
-static auto deduce_iterator_range(Args&&...args) -> 
-	typename std::enable_if<
-		is_byte_type<
-			typename std::iterator_traits<
-				typename Chusov::identity<
-					decltype(_Implementation::deduce_iterator_range(std::forward<Args>(args)...))
-				>::type::iterator
-			>::value_type
-		>::value, 
-		decltype(_Implementation::deduce_iterator_range(std::forward<Args>(args)...))
-	>::type
-{
-	return _Implementation::deduce_iterator_range(std::forward<Args>(args)...);
-}
-template <class...Args>
-static auto _is_deducable_to_range(int, decltype(deduce_iterator_range(std::declval<Args>()...))* = nullptr) -> std::true_type;
-template <class...Args>
-static auto _is_deducable_to_range(...) -> std::false_type;
-
-template <class...Args>
-struct is_deducable_to_range:decltype(_is_deducable_to_range<Args...>(int())) {};
-
-static const bool fKey = CAMaaS::_Implementation::is_key_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, std::size_t>::value;
-static const bool fKey2 = CAMaaS::_Implementation::is_key_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, int>::value;
-static const bool fKey3 = CAMaaS::_Implementation::is_key_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, int*>::value;
-
-static const bool fVal = CAMaaS::_Implementation::is_value_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const int*, std::size_t>::value;
-static const bool fVal2 = CAMaaS::_Implementation::is_value_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, int>::value;
-static const bool fVal3 = CAMaaS::_Implementation::is_value_constructible_from<_Implementation::InMemoryAssociativeDataStorageImplementation, const void*, int*>::value;
-
-static const bool fConv = std::is_convertible<CAMaaS::InMemoryDataStorageOwn, CAMaaS::DataStorageRef>::value;
-static const bool fBase = std::is_base_of<CAMaaS::DataStorageRef, CAMaaS::InMemoryDataStorageOwn>::value;
-
 int main(int, char**)
 {
 	auto map = CAssociativeDataStorage<InMemoryAssociativeDataStorageImplementation>();
