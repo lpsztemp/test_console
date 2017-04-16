@@ -99,7 +99,7 @@ static const bool fBase = std::is_base_of<CAMaaS::DataStorageRef, CAMaaS::InMemo
 
 int main(int, char**)
 {
-	auto map = CKeyedData<_Implementation::InMemoryAssociativeDataStorageImplementation>();
+	auto map = CAssociativeDataStorage<InMemoryAssociativeDataStorageImplementation>();
 
 	map.insert("Key1", 4, std::string("value1"));
 	map.insert(reinterpret_cast<const std::uint8_t*>("Key2"), 4, "value2", 6);
